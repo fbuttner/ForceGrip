@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLE Weight Scale</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        h1 {
+            text-align: center;
+        }
+        body {
+            text-align: center;
+        }
+        #weightValue {
+            display: block;
+            text-align: center;
+            margin: 10px auto;
+            font-size: 6em;
+        }
+        #batteryLevel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ForceGrip</h1>
+    <button id="connect">Connect to ForceGrip</button>
+    <div id="weightValue">0 kg</div>
+    <div id="batteryLevel">0 %</div>
+    <div>
+        <span>Target Weight : </span>
+        <input id="targetWeight" value="15" />
+    </div>
+    <canvas id="weightChart" width="400" height="200"></canvas>
+    <script>
+        let weightData = [];
+        let timeLabels = [];
+        let chart;
+        let BLE_Device = 0;
+
+        // Initialize Chart.js graph
+        function initGraph() {
+            const ctx = document.getElementById('weightChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        label: 'Weight (kg)',
+                        data: weightData,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Time (s)' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Weight (kg)' },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Connect to BLE weight scale
+        async function connectToScale() {
+            try {
+                console.log('Requesting Bluetooth device with weight scale service...');
+                BLE_Device = await navigator.bluetooth.requestDevice({
+                    filters:[{services:[0x181d]}],
+                });
+
+                console.log('Connecting to GATT server...');
+                const server = await BLE_Device.gatt.connect();
+
+                console.log('Getting weight scale service...');
+                const service = await server.getPrimaryService(0x181d);
+
+                console.log('Getting weight measurement characteristic...');
+                const weightCharacteristic = await service.getCharacteristic(0x2a9d);
+
+                console.log('Subscribing to weight notifications...');
+                weightCharacteristic.addEventListener('characteristicvaluechanged', event => {
+                    const value = event.target.value;
+                    const weight = value.getUint16(1, true) / 200; // Implement parse logic based on your device
+                    const targetWeight = document.getElementById('targetWeight').value;
+
+                    //console.log('Weight:', weight);
+                    document.getElementById('weightValue').innerText = weight.toLocaleString(undefined, { minimumFractionDigits: 1 , maximumFractionDigits:1}) + " kg";
+                    //updateGraph(weight);
+                    if(weight < (0.9*targetWeight)) {
+                        document.getElementById('weightValue').style.color = "blue";
+                    } else if (weight > (1.1*targetWeight))
+                    {
+                        document.getElementById('weightValue').style.color = "red";
+                    } else {
+                        document.getElementById('weightValue').style.color = "green";
+                    }
+                    weightData.push(weight);
+
+                    const currentTime = new Date().toLocaleTimeString();
+                    timeLabels.push(currentTime);
+                });
+
+                console.log('Getting battery level measurement characteristic...');
+                const batteryCharacteristic = await service.getCharacteristic(0x2a19);
+
+                console.log('Subscribing to battery level notifications...');
+                batteryCharacteristic.addEventListener('characteristicvaluechanged', event => {
+                    const value = event.target.value;
+                    const batteryLevel = value.getUint8(0);
+
+                    document.getElementById('batteryLevel').innerText = batteryLevel + " %";
+                });
+
+                await weightCharacteristic.startNotifications();
+                await batteryCharacteristic.startNotifications();
+                console.log('Notifications started.');
+
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Event listener for connect button
+        document.getElementById('connect').addEventListener('click', () => {
+            if((BLE_Device == 0) || (!BLE_Device.gatt.connected))
+            {
+                weightData = [];
+                timeLabels = [];
+                
+                connectToScale();
+                document.getElementById('connect').innerText = "Disconnect";
+            }
+            else
+            {
+                BLE_Device.gatt.disconnect();
+                chart.update();
+                document.getElementById('connect').innerText = "Connect to ForceGrip";
+            }
+        });
+
+        // Initialize graph on page load
+        window.onload = initGraph;
+    </script>
+</body>
+</html>
