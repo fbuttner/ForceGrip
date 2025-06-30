@@ -1,0 +1,135 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7fa;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+}
+
+h2, h3 {
+    color: #555;
+    text-align: center;
+}
+
+.weight {
+    margin-bottom: 20px;
+}
+
+.weight h2 {
+    margin: 30px auto;
+}
+
+.battery-level {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 20%;
+}
+
+.battery-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.battery-fill {
+    height: 100%;
+    background-color: #76b900;
+    width: 50%; /* Initial battery level */
+    border-radius: 10px;
+}
+
+#battery-value {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+}
+.graph-container {
+    margin-bottom: 20px;
+    height: 50vh;
+}
+
+canvas {
+    width: 100%; /* Ensure the canvas takes up full width */
+    height: 100%; /* Ensure the canvas takes up full height of the container */
+    display: block; /* Remove any unwanted space under the canvas */
+}
+.tare-btn button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+}
+
+.tare-btn button:hover {
+    background-color: #0056b3;
+}
+
+/* Dropdown Button and Content */
+.dropdown {
+    position: relative;
+    margin-top: 20px;
+}
+
+.dropdown-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: lightgray;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+}
+
+.dropdown-content>form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 5px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-content input , .dropdown-content select {
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.dropdown-content button {
+    background-color: #28a745;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+}
+
+.dropdown-content button:hover {
+    background-color: #218838;
+}

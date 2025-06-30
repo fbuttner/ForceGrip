@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>%DEVICE_NAME%</title>
+        <link rel="stylesheet" href="styles.css">
+        <script src="./chart.js"></script>
+        <script src="./script.js" defer></script>
+    </head>
+    <body>
+        <div class="container">
+            <!-- Instant Value Display -->
+            <div class="weight">
+                <h2>Strength: <span id="weight-value">...</span> Kg</h2>
+            </div>
+            
+            <!-- Battery Level -->
+            <div class="battery-level">
+                <span id="battery-value">...</span>
+                <div class="battery-bar" id="battery-bar">
+                    <div class="battery-fill" id="battery-fill"></div>
+                </div>
+            </div>
+            
+            <!-- Graph Showing Value Through Time -->
+            <div class="graph-container">
+                <canvas id="Weight-Graph"></canvas>
+            </div>
+            
+            <!-- Tare Button -->
+            <form id="form-tarring" method="post" class="tare-btn">
+                <button type="submit" name="tare">Tare</button>
+            </form>
+
+            <!-- Dropdown for Configuration -->
+            <div class="dropdown">
+                <button class="dropdown-btn" onclick="toggleDropdown()">Settings</button>
+                <div class="dropdown-content" id="dropdownContent" style="display: none;">
+                    <!-- WiFi Configuration Section -->
+                    <form id="form-configuration" method="post">
+                        <h3>Configuration</h3>
+                        <label for="device_name">Device Name</label>
+                        <input type="text" id="device_name" placeholder="Enter Device Name" value="%DEVICE_NAME%"  pattern="[A-Za-z 0-9\-_]+">
+                        <label for="scale_factor">Scale Factor</label>
+                        <input type="text" id="scale_factor" placeholder="Enter New Scale Factor" pattern="[0-9.,]+" value="%SCALE_FACTOR%"required>
+                        <label for="startup_mode">Startup Mode</label>
+                        <select id="startup_mode">
+                            <option value="0" %STARTUP_MODE_BLUETOOTH_SELECTED% >BlueTooth</option>
+                            <option value="1" %STARTUP_MODE_WIFI_AP_SELECTED% >Wifi Access Point</option>
+                        </select>
+                        <button type="submit">Save</button>
+                    </form>
+                    <form id="form-password" method="post">
+                        <h3>Changing Password</h3>
+                        <label for="password">Old Password:</label>
+                        <input type="password" id="old_password" placeholder="Enter Old Password" required>
+                        <label for="password">New Password:</label>
+                        <input type="password" id="new_password" placeholder="Enter New Password" required>
+                        <label for="password">New Password:</label>
+                        <input type="password" id="new_password_bis" placeholder="Enter New Password Reapeat" required>
+                        <button type="submit">Save</button>
+                    </form>
+                    <!-- Calibration Section -->
+                    <form id="form-calibration" method="post">
+                        <h3>Calibration</h3>
+                        <label for="Calibration">Enter Weight Value (kg):</label>
+                        <input type="number" id="Calibration" placeholder="Enter weight" required>
+                        <button type="submit">Calibrate</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
