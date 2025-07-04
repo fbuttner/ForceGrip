@@ -12,8 +12,7 @@ bool Config::readConfig()
     DeserializationError error = deserializeJson(doc, configFile);
     if(error)
     {
-        log_d("Failed to parse config file, using default configuration");
-        log_d(error.c_str());
+        log_d("Failed to parse c, default configuration\n%s", error.c_str());
 
         configFile.close();
 

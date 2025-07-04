@@ -135,7 +135,7 @@ void loop()
         if(ble_scale.isConnected())
             ble_scale.updateBatteryLevel(battery.getLevel());
 
-        log_d("Battery Level : %d\%, Analog Read : %d", batteryLevel, batteryValue);
+        log_d("Battery Level : %d\%, Analog Read : %d", battery.getLevel(), battery.getRawValue());
     }
 
     // Update the LED color
