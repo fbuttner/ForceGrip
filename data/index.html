@@ -35,39 +35,59 @@
 
             <!-- Dropdown for Configuration -->
             <div class="dropdown">
-                <button class="dropdown-btn" onclick="toggleDropdown()">Settings</button>
-                <div class="dropdown-content" id="dropdownContent" style="display: none;">
+                <button class="dropdown-btn" onclick="toggleDropdown('dropdownSetup')">Settings</button>
+                <div class="dropdown-content" id="dropdownSetup" style="display: none;">
                     <!-- WiFi Configuration Section -->
-                    <form id="form-configuration" method="post">
-                        <h3>Configuration</h3>
-                        <label for="device_name">Device Name</label>
-                        <input type="text" id="device_name" placeholder="Enter Device Name" value="%DEVICE_NAME%"  pattern="[A-Za-z 0-9\-_]+">
-                        <label for="scale_factor">Scale Factor</label>
-                        <input type="text" id="scale_factor" placeholder="Enter New Scale Factor" pattern="[0-9.,]+" value="%SCALE_FACTOR%"required>
-                        <label for="startup_mode">Startup Mode</label>
-                        <select id="startup_mode">
-                            <option value="0" %STARTUP_MODE_BLUETOOTH_SELECTED% >BlueTooth</option>
-                            <option value="1" %STARTUP_MODE_WIFI_AP_SELECTED% >Wifi Access Point</option>
-                        </select>
-                        <button type="submit">Save</button>
-                    </form>
-                    <form id="form-password" method="post">
-                        <h3>Changing Password</h3>
-                        <label for="password">Old Password:</label>
-                        <input type="password" id="old_password" placeholder="Enter Old Password" required>
-                        <label for="password">New Password:</label>
-                        <input type="password" id="new_password" placeholder="Enter New Password" required>
-                        <label for="password">New Password:</label>
-                        <input type="password" id="new_password_bis" placeholder="Enter New Password Reapeat" required>
-                        <button type="submit">Save</button>
-                    </form>
+                    <div class="sub-dropdown">
+                        <h3 class="sub-dropdown-btn" onclick="toggleDropdown('form-configuration')">Configuration</h3>
+                        <form id="form-configuration" method="post" style="display: none;">
+                            <label for="device_name">Device Name</label>
+                            <input type="text" id="device_name" placeholder="Enter Device Name" value="%DEVICE_NAME%"  pattern="[A-Za-z 0-9\-_]+">
+                            <label for="scale_factor">Scale Factor</label>
+                            <input type="text" id="scale_factor" placeholder="Enter New Scale Factor" pattern="[0-9.,]+" value="%SCALE_FACTOR%"required>
+                            <label for="startup_mode">Startup Mode</label>
+                            <select id="startup_mode">
+                                <option value="0" %STARTUP_MODE_BLUETOOTH_SELECTED% >BlueTooth</option>
+                                <option value="1" %STARTUP_MODE_WIFI_SELECTED% >Wifi</option>
+                            </select>
+                            <button type="submit">Save</button>
+                        </form>
+                    </div>
+                    <!-- Changing the password of the WiFi AP -->
+                    <div class="sub-dropdown">
+                        <h3 class="sub-dropdown-btn" onclick="toggleDropdown('form-password')">Changing AP Password</h3>
+                        <form id="form-password" method="post" style="display: none;">
+                            <label for="old_password">Old Password:</label>
+                            <input type="password" id="old_password" placeholder="Enter Old Password" required>
+                            <label for="password">New Password:</label>
+                            <input type="password" id="new_password" placeholder="Enter New Password" required>
+                            <label for="password">New Password:</label>
+                            <input type="password" id="new_password_bis" placeholder="Enter New Password Reapeat" required>
+                            <button type="submit">Save</button>
+                        </form>
+                    </div>
+                    <div class="sub-dropdown">
+                        <h3 class="sub-dropdown-btn" onclick="toggleDropdown('form-WiFi-List')">WiFi Networks</h3>
+                        <form id="form-WiFi-List" method="post" style="display: none;">
+                            <h4>List of saved WiFi Networks</h4>
+                            %WIFI_NETWORKS%
+                            <h4>Adding a new WiFi</h4>
+                            <label for="password">New SSID:</label>
+                            <input type="text" name="New_WiFi_SSID" placeholder="New SSID">
+                            <label for="New_WiFi_password">Password:</label>
+                            <input type="password" name="New_WiFi_password" placeholder="Enter WiFi Password">
+                            <button type="submit">Save</button>
+                        </form>
+                    </div>
                     <!-- Calibration Section -->
-                    <form id="form-calibration" method="post">
-                        <h3>Calibration</h3>
-                        <label for="Calibration">Enter Weight Value (kg):</label>
-                        <input type="number" id="Calibration" placeholder="Enter weight" required>
-                        <button type="submit">Calibrate</button>
-                    </form>
+                    <div class="sub-dropdown">
+                        <h3 class="sub-dropdown-btn" onclick="toggleDropdown('form-calibration')">Calibration</h3>
+                        <form id="form-calibration" method="post" style="display: none;">
+                            <label for="Calibration">Enter Weight Value (kg):</label>
+                            <input type="number" id="Calibration" placeholder="Enter weight" required>
+                            <button type="submit">Calibrate</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

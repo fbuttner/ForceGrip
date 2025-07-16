@@ -6,7 +6,11 @@ void BLE_Scale::init(const std::string& deviceName) {
     BLEAdvertising *pAdvertising;
     BLEService *pService;
 
-    _deviceName = deviceName;
+    if(deviceName.length() > 0)
+        _deviceName = "ForceGrip - " + deviceName;
+    else
+        _deviceName = "ForceGrip";
+    
     _deviceConnected = false;
 
     // Create the BLE Device

@@ -26,6 +26,9 @@
 /******************************************************************************************************/
 void setup()
 {
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_INFO
+    delay(3000);
+#endif
     stateMode = INITIALISATION;
 
     log_i("Initializing SPIFFS...");
@@ -61,6 +64,9 @@ void setup()
     delay(500);
     LoadCell.tare(10);
 
+    serverWiFi.setAP_SSID(config.get_name());
+    serverWiFi.setAP_password(config.get_password());
+    
     if(config.get_startingMode() == 0)
     {
         log_i("Initializing BlueTooth...");
@@ -69,9 +75,9 @@ void setup()
         stateMode = BLE_BINDING;
     } else if(config.get_startingMode() == 1) {
         log_i("Initializing the Web Server...");
-        serverWiFi.begin(config.get_name(), config.get_password());
-        
-        stateMode = WIFI;
+        stateMode = WIFI_CONNECTING;
+        serverWiFi.begin();
+        //stateMode = WIFI_CONNECTED;
     }
 
     attachInterrupt(LOADCELL_DOUT_PIN, read_loadCell_ISR, FALLING);
@@ -90,22 +96,24 @@ void setup()
 void loop()
 {
     button.loop();
+    serverWiFi.loop();
 
-    // notify the weight if a device is connected
+    // notify the weight if a BLE device is connected
     if(ble_scale.isConnected())
     {
-        while (WeightValueAvailable > 0)
+        if(WeightValueAvailable > 0)
         {
             WeightValueAvailable--;
-                ble_scale.updateWeight(WeightValue[WeightValueAvailable]>0 ?WeightValue[WeightValueAvailable]:-WeightValue[WeightValueAvailable]);
-            
+
+            ble_scale.updateWeight(WeightValue[WeightValueAvailable]>0?WeightValue[WeightValueAvailable]:-WeightValue[WeightValueAvailable]);
             log_d("Weight : %.2f kg", WeightValue[WeightValueAvailable]/1000);
+
+            WeightValueAvailable = 0;
         }
     }
-    
-    if(serverWiFi.isServerStarted())
+    else if(serverWiFi.isServerStarted() && serverWiFi.asWebSocketClient())
     {
-        EVERY_N_MILLISECONDS(100)
+        EVERY_N_MILLISECONDS(200)
         {
             if(WeightValueAvailable > 0)
             {
@@ -121,12 +129,16 @@ void loop()
         stateMode = BLE_BINDING;
         oldDeviceConnected = false;
     }
-
     if (ble_scale.isConnected() && !oldDeviceConnected)
     {
         stateMode = BLE_MEASUREMENT;
         oldDeviceConnected = true;
     }
+    if(WiFi.status() == WL_CONNECTED && stateMode == WIFI_CONNECTING)
+    {
+        stateMode = WIFI_CONNECTED;
+    }
+
     // Update the battery Level every second
     EVERY_X_SECONDS(1)
     {
@@ -139,35 +151,38 @@ void loop()
     }
 
     // Update the LED color
-    switch (stateMode)
+    EVERY_X_MILLIS(125)
     {
-        default:
-        EVERY_X_SECONDS(1)
-        {
-            static uint8_t blink_state=false;
-            blink_state = !blink_state;
+        static uint8_t counter=0;
+        static uint8_t blink=0;
 
-            if((stateMode == BLE_BINDING) && blink_state)
+        if((stateMode == BLE_BINDING) && (counter&0X8))
+        {
+            myLED[0] = CRGB::Blue;
+            blink=0;
+        }
+        else
+        {
+            if((counter&0x3) && (stateMode == WIFI_CONNECTING))
             {
-                myLED[0] = CRGB::Blue;
+                // if WiFi not connected blink every 450ms
+                myLED[0] = CRGB::Black;
+            }
+            else if(battery.getLevel()>50)
+            {
+                myLED[0].r = 0xFF*(100-battery.getLevel())/50;
+                myLED[0].g = 0xFF;
+                myLED[0].b = 0;
             }
             else
             {
-                if(battery.getLevel()>50)
-                {
-                    myLED[0].r = 0xFF*(100-battery.getLevel())/50;
-                    myLED[0].g = 0xFF;
-                    myLED[0].b = 0;
-                }
-                else
-                {
-                    myLED[0].r = 0xFF;
-                    myLED[0].g = 0xFF*battery.getLevel()/50;
-                    myLED[0].b = 0;
-                }
+                myLED[0].r = 0xFF;
+                myLED[0].g = 0xFF*battery.getLevel()/50;
+                myLED[0].b = 0;
             }
         }
-        break;
+
+        counter = (counter+1) & 0X0F;
     }
 
     FastLED.show();
@@ -208,12 +223,17 @@ void longClickDetected(Button2& btn)
         case BLE_BINDING:
             detachInterrupt(LOADCELL_DOUT_PIN);
             ble_scale.stopAdvertising();
-            serverWiFi.begin(config.get_name(), config.get_password());
+            serverWiFi.begin();
             attachInterrupt(LOADCELL_DOUT_PIN, read_loadCell_ISR, FALLING);
-            stateMode = WIFI;
+
+            if(WiFi.status() == WL_CONNECTED)
+                stateMode = WIFI_CONNECTED;
+            else
+                stateMode = WIFI_CONNECTING;
         break;
 
-        case WIFI:
+        case WIFI_CONNECTED:
+        case WIFI_CONNECTING:
             detachInterrupt(LOADCELL_DOUT_PIN);
             serverWiFi.stop();
             ble_scale.startAdvertising();

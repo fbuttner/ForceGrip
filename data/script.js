@@ -87,9 +87,9 @@ socket.onerror = function(err) {
     console.log("Erreur WebSocket : ", err);
 };
 
-function toggleDropdown() {
-    const dropdownContent = document.getElementById('dropdownContent');
-    dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+function toggleDropdown(elementsID) {
+    const dropdownContent = document.getElementById(elementsID);
+    dropdownContent.style.display = dropdownContent.style.display === 'none' ? '' : 'none';
 }
 
 document.getElementById("form-tarring").addEventListener("submit", function(event) {
