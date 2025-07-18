@@ -21,10 +21,11 @@ extern void read_loadCell_ISR();
 
 
 enum _SERVERWIFI_STATUS_FLAGS_ {
-    SERVERWIFI_SCANING = 0b00000001,
-    SERVERWIFI_CONNECTING = 0b00000010,
-    SERVERWIFI_CONNECTED = 0b00000100,
-    SERVERWIFI_SERVERSTARTED = 0b00001000,
+    SERVERWIFI_SCANING       = 0b00000001,
+    SERVERWIFI_CONNECTING    = 0b00000010,
+    SERVERWIFI_CONNECTED     = 0b00000100,
+    SERVERWIFI_AP_STARTED    = 0b00001000,
+    SERVERWIFI_SERVERSTARTED = 0b10000000,
 };
 
 class ServerWiFi
@@ -42,6 +43,8 @@ public:
 
     void setAP_SSID(const char* userName);
     void setAP_password(const char* password)  {_AP_password = password;};
+
+    uint8_t get_status()    {return _status;};
 
     AsyncWebSocket::SendStatus sendWeight(float *weightInGram, int64_t *timestamp, uint8_t size, uint8_t batteryLevel);
     

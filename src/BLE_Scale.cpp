@@ -9,8 +9,16 @@ void BLE_Scale::init(const std::string& deviceName) {
     if(deviceName.length() > 0)
         _deviceName = "ForceGrip - " + deviceName;
     else
-        _deviceName = "ForceGrip";
-    
+    {
+        uint8_t mac[6];
+        char macStr[7] = { 0 };
+
+        esp_read_mac(mac, ESP_MAC_BT);
+
+        sprintf(macStr, "%02X%02X%02X",  mac[3], mac[4], mac[5]);
+        _deviceName = "ForceGrip_";
+        _deviceName += macStr;
+    }
     _deviceConnected = false;
 
     // Create the BLE Device
@@ -62,18 +70,15 @@ void BLE_Scale::init(const std::string& deviceName) {
     log_i("Starting BLE Service...");
     pService->start();
 
-    // Start advertising
+    // Creating advertising
     log_i("Creating BLE Advertising...");
     pAdvertising = BLEDevice::getAdvertising();
-    log_i("Adding BLE Service UUID...");
+    log_d("Adding BLE Service UUID...");
     pAdvertising->addServiceUUID(_serviceUUID);
-    log_i("Setting BLE Advertising parameters...");
+    log_d("Setting BLE Advertising parameters...");
     pAdvertising->setScanResponse(true);
     pAdvertising->setMinPreferred(0x06); // functions that help with iPhone connections issue
     pAdvertising->setMinPreferred(0x12);
-
-    log_i("Starting BLE Advertising...");
-    pAdvertising->start();
     
     log_i("Waiting for a BLE client to notify...");
 }

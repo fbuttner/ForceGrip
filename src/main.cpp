@@ -66,16 +66,19 @@ void setup()
 
     serverWiFi.setAP_SSID(config.get_name());
     serverWiFi.setAP_password(config.get_password());
-    
+
+    log_i("Initializing BlueTooth...");
+    ble_scale.init(config.get_name());
+
     if(config.get_startingMode() == 0)
     {
         log_i("Initializing BlueTooth...");
-        ble_scale.init(config.get_name());
+        ble_scale.startAdvertising();
 
         stateMode = BLE_BINDING;
     } else if(config.get_startingMode() == 1) {
         log_i("Initializing the Web Server...");
-        stateMode = WIFI_CONNECTING;
+        stateMode = WIFI_SEARCHING;
         serverWiFi.begin();
         //stateMode = WIFI_CONNECTED;
     }
@@ -96,7 +99,8 @@ void setup()
 void loop()
 {
     button.loop();
-    serverWiFi.loop();
+    if(stateMode >= WIFI_SEARCHING)
+        serverWiFi.loop();
 
     // notify the weight if a BLE device is connected
     if(ble_scale.isConnected())
@@ -124,19 +128,31 @@ void loop()
     }
     
     // update the connection status
-    if (!ble_scale.isConnected() && oldDeviceConnected)
+    if(stateMode == BLE_BINDING || stateMode == BLE_CONNECTED)
     {
-        stateMode = BLE_BINDING;
-        oldDeviceConnected = false;
+        if (!ble_scale.isConnected() && oldDeviceConnected)
+        {
+            stateMode = BLE_BINDING;
+            oldDeviceConnected = false;
+        }
+        if (ble_scale.isConnected() && !oldDeviceConnected)
+        {
+            stateMode = BLE_CONNECTED;
+            oldDeviceConnected = true;
+        }
     }
-    if (ble_scale.isConnected() && !oldDeviceConnected)
+    else
     {
-        stateMode = BLE_MEASUREMENT;
-        oldDeviceConnected = true;
-    }
-    if(WiFi.status() == WL_CONNECTED && stateMode == WIFI_CONNECTING)
-    {
-        stateMode = WIFI_CONNECTED;
+        uint8_t _status = serverWiFi.get_status();
+
+        if (_status & SERVERWIFI_CONNECTED)
+            stateMode = WIFI_CONNECTED;
+        else if (_status & SERVERWIFI_SCANING)
+            stateMode = WIFI_SEARCHING;
+        else if (_status & SERVERWIFI_CONNECTING)
+            stateMode = WIFI_CONNECTING;
+        else if (_status & SERVERWIFI_AP_STARTED)
+            stateMode = WIFI_AP_CREATE;
     }
 
     // Update the battery Level every second
@@ -155,31 +171,47 @@ void loop()
     {
         static uint8_t counter=0;
         static uint8_t blink=0;
+        CRGB Battery_color;
 
-        if((stateMode == BLE_BINDING) && (counter&0X8))
-        {
-            myLED[0] = CRGB::Blue;
-            blink=0;
-        }
+        if(battery.getLevel()>50)
+            Battery_color.setRGB(0xFF*(100-battery.getLevel())/50, 0xFF, 0);
         else
+            Battery_color.setRGB(0xFF, 0xFF*battery.getLevel()/50, 0);
+
+        switch (stateMode)
         {
-            if((counter&0x3) && (stateMode == WIFI_CONNECTING))
-            {
-                // if WiFi not connected blink every 450ms
-                myLED[0] = CRGB::Black;
-            }
-            else if(battery.getLevel()>50)
-            {
-                myLED[0].r = 0xFF*(100-battery.getLevel())/50;
-                myLED[0].g = 0xFF;
-                myLED[0].b = 0;
-            }
-            else
-            {
-                myLED[0].r = 0xFF;
-                myLED[0].g = 0xFF*battery.getLevel()/50;
-                myLED[0].b = 0;
-            }
+            // Blinking blue every second while no one is connected in BLE
+            case BLE_BINDING: 
+                if(counter&0x08)
+                    myLED[0] = CRGB::Blue;
+                else
+                    myLED[0] = CRGB::Black;
+                break;
+            case BLE_CONNECTED:
+                myLED[0] = CRGB::Blue;
+                break;
+            case WIFI_SEARCHING:
+                if(counter&0x04)
+                    myLED[0] = CRGB::Green;
+                else
+                    myLED[0] = CRGB::Black;
+                break;
+            case WIFI_CONNECTING:
+                if(counter&0x02)
+                    myLED[0] = CRGB::Green;
+                else
+                    myLED[0] = CRGB::Black;
+                break;
+            case WIFI_CONNECTED:
+                myLED[0] = CRGB::Green;
+                break;
+            case WIFI_AP_CREATE:
+                myLED[0] = CRGB::Orange;
+                break;
+
+            default:
+                myLED[0] = Battery_color;
+                break;
         }
 
         counter = (counter+1) & 0X0F;
@@ -226,10 +258,7 @@ void longClickDetected(Button2& btn)
             serverWiFi.begin();
             attachInterrupt(LOADCELL_DOUT_PIN, read_loadCell_ISR, FALLING);
 
-            if(WiFi.status() == WL_CONNECTED)
-                stateMode = WIFI_CONNECTED;
-            else
-                stateMode = WIFI_CONNECTING;
+            stateMode = WIFI_SEARCHING;
         break;
 
         case WIFI_CONNECTED:
