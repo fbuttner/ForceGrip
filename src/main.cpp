@@ -64,9 +64,6 @@ void setup()
     delay(500);
     LoadCell.tare(10);
 
-    serverWiFi.setAP_SSID(config.get_name());
-    serverWiFi.setAP_password(config.get_password());
-
     log_i("Initializing BlueTooth...");
     ble_scale.init(config.get_name());
 
@@ -152,7 +149,7 @@ void loop()
         else if (_status & SERVERWIFI_CONNECTING)
             stateMode = WIFI_CONNECTING;
         else if (_status & SERVERWIFI_AP_STARTED)
-            stateMode = WIFI_AP_CREATE;
+            stateMode = WIFI_AP_CREATED;
     }
 
     // Update the battery Level every second
@@ -205,7 +202,7 @@ void loop()
             case WIFI_CONNECTED:
                 myLED[0] = CRGB::Green;
                 break;
-            case WIFI_AP_CREATE:
+            case WIFI_AP_CREATED:
                 myLED[0] = CRGB::Orange;
                 break;
 
@@ -261,8 +258,10 @@ void longClickDetected(Button2& btn)
             stateMode = WIFI_SEARCHING;
         break;
 
+        case WIFI_SEARCHING:
         case WIFI_CONNECTED:
         case WIFI_CONNECTING:
+        case WIFI_AP_CREATED:
             detachInterrupt(LOADCELL_DOUT_PIN);
             serverWiFi.stop();
             ble_scale.startAdvertising();

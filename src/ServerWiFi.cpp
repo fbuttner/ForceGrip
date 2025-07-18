@@ -33,7 +33,7 @@ void ServerWiFi::begin()
 
 void ServerWiFi::loop()
 {
-    if(!(_status&SERVERWIFI_CONNECTED))
+    if(!(_status&SERVERWIFI_CONNECTED) && !(_status&SERVERWIFI_AP_STARTED))
     {
         // Handle WiFi scanning state
         if(_status&SERVERWIFI_SCANING)
@@ -122,8 +122,7 @@ void ServerWiFi::loop()
             log_i("WiFi status: %d", WiFi.status());
         }
     }
-
-    if((_status&SERVERWIFI_CONNECTED) && !(_status&SERVERWIFI_SERVERSTARTED))
+    else if(!(_status&SERVERWIFI_SERVERSTARTED))
         createWebServer();
 }
 
@@ -163,11 +162,13 @@ void ServerWiFi::setAP_SSID(const char* userName=nullptr)
 
         sprintf(macStr, "%02X%02X%02X", mac[3], mac[4], mac[5]);
     
-        _AP_ssid = String("ForceGrip_" + String(macStr)).c_str();
+        _AP_ssid = "ForceGrip_";
+        _AP_ssid += macStr;
     }
     else
     {
-        _AP_ssid = String("ForceGrip - " + String(userName)).c_str();
+        _AP_ssid = "ForceGrip_";
+        _AP_ssid += userName;
     }
 }
 

@@ -49,8 +49,8 @@ public:
     AsyncWebSocket::SendStatus sendWeight(float *weightInGram, int64_t *timestamp, uint8_t size, uint8_t batteryLevel);
     
 private:
-    const char* _AP_ssid;
-    const char* _AP_password;
+    String _AP_ssid;
+    String _AP_password;
     AsyncWebServer* _server;
     AsyncWebSocket* _webSocket;
     unsigned long _startConnectingTime;
