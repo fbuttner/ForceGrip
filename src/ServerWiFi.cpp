@@ -133,7 +133,9 @@ void ServerWiFi::stop()
 
     if(WiFi.isConnected())
         WiFi.disconnect();
-
+    if(_status & SERVERWIFI_AP_STARTED)
+        WiFi.softAPdisconnect(true);
+    
     if(_webSocket != nullptr)
     {
         log_d("Stopping webSocket...");
