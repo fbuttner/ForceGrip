@@ -1,6 +1,7 @@
 const dataLenght = 80*30; // 30s of data
 
 const weightText = document.getElementById("weight-value");
+const weightMaxText = document.getElementById("weight-max");
 const batteryText = document.getElementById("battery-value");
 const batteryFill = document.getElementById('battery-fill');
 const graph = document.getElementById("Weight-Graph").getContext("2d");
@@ -10,7 +11,7 @@ const graph_data = {
     labels: graph_labels,
     datasets: [{
         label: 'Strenght (kg)',
-        data: new Array(dataLenght),
+        data: new Array(dataLenght).fill(0),
         borderColor: 'blue',
         backgroundColor: 'rgba(0, 0, 255, 0.1)',
         tension: 0.3,
@@ -66,9 +67,8 @@ socket.onmessage = function(event) {
     weightText.textContent = (weights[len-1]/1000).toFixed(1);
     batteryText.textContent = batteryLevel+" %";
     batteryFill.style.width = batteryLevel+"%";
-
+    
     // Ajouter donnée au graphique
-
     for (let i = 0; i < len; i++) {
         graph_labels.push(timeStamp[i].toString());
         graph_data.datasets[0].data.push(weights[i]/1000);
@@ -78,6 +78,9 @@ socket.onmessage = function(event) {
         graph_labels.shift();
         graph_data.datasets[0].data.shift();
     }
+
+    weightMaxText.textContent = Math.max(...graph_data.datasets[0].data).toFixed(1);
+
 
     chart.update();
 
