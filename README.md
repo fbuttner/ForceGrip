@@ -1,6 +1,20 @@
 # ForceGrip
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ForceGrip is a device designed to measure and track finger and hand strength. It uses a force-sensitive load cell connected to an ESP32 to provide real-time data. You can connect to the ForceGrip via Bluetooth Low Energy (BLE)  or a local WiFi network to view your strength data.
+
+## 📚 Table of Contents
+- [✨ Features](#-features)
+- [⚙️ Hardware Components](#️-hardware-components)
+- [🕹️ Usage](#️-usage)
+  - [BLE Mode](#ble-mode)
+  - [WiFi Mode](#wifi-mode)
+- [🚀 Flashing The Firmware](#-flashing-the-firmware)
+  - [Web Flasher (Easy Way)](#1-web-flasher-easy-way-recommended)
+  - [Building from Source (For Developers)](#2-building-from-source-for-developers)
+- [🤝 Contributing](#-contributing)
+- [📜 License](#-license)
 
 ## ✨ Features
 
@@ -14,7 +28,7 @@ ForceGrip is a device designed to measure and track finger and hand strength. It
 
 ## ⚙️ Hardware Components
 
-- ESP32-based board : e.g., LOLIN C3 PICO
+- ESP32-based board : LOLIN C3 PICO
 - An HX711 load cell amplifier module
 - A load cell : salvage from a WH-C06 digital scale
 - A momentary push button : salvage from a WH-C06 digital scale
@@ -32,7 +46,7 @@ To switch to WiFi mode, press and hold the button for 2 seconds. The device supp
 #### Client Mode (Connecting to an existing network)
 When configured with your WiFi credentials, the device will connect to your existing network.
 1.  Ensure your computer or phone is on the same network.
-2.  Open a web browser and navigate to `http://forcgrip.local`.
+2.  Open a web browser and navigate to http://forcgrip.local.
 3.  The web page will display real-time data and provide options for device configuration, including setting up your WiFi credentials .
 
 If the device cannot connect to a configured network, it will automatically fall back into Access Point mode.
@@ -40,9 +54,9 @@ If the device cannot connect to a configured network, it will automatically fall
 #### Access Point Mode (Initial Setup)
 If the device has not been configured to connect to your WiFi, or if the connection fails, it will create its own Access Point. This mode is typically used for initial setup.
 1.  Connect to the device's WiFi network:
-    - **SSID**: `ForceGrip`
+    - **SSID**: `ForceGrip_XXXXXX`
     - **Password**: `ForceGripPWD`
-2.  Once connected, open a web browser and navigate to `http://192.168.4.1` or `http://forcgrip.local`.
+2.  Once connected, open a web browser and navigate to http://192.168.4.1 or http://forcgrip.local.
 3.  The web page will display real-time data and provide options for device configuration, including setting up your WiFi credentials .
 
 
@@ -57,7 +71,7 @@ If you don't want to compile the code, you can flash the device directly from yo
 
 1.  Use a **Google Chrome** or **Microsoft Edge** browser.
 2.  Connect your ForceGrip device to your computer via USB.
-3.  Go to the **ForceGrip Web Flasher**.
+3.  Go to the **ForceGrip Web Flasher** : https://fbuttner.github.io/ForceGrip-WebFlasher.
 4.  Follow the on-screen instructions to connect to your device and flash the latest firmware.
 
 ### 2. Building from Source (For Developers)
@@ -105,3 +119,12 @@ You can do this in two ways:
         ```bash
         pio run --target uploadfs
         ```
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
+
+## 📜 License
+
+This project is MIT licensed.
+
