@@ -6,37 +6,167 @@
     <title>BLE Weight Scale</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        h1 {
-            text-align: center;
-        }
         body {
-            text-align: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            padding: 8px;
+            margin: 5px 0px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
         #weightValue {
-            display: block;
+            font-size: 4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 20px 0;
             text-align: center;
-            margin: 10px auto;
-            font-size: 6em;
         }
+
+        #weightValue span {
+            display: inline-block;
+            min-width: 100px; /* Ensure consistent width */
+        }
+
         #batteryLevel {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: -50px;
+            right: 20px;
+            font-size: 1.1em;
+            color: #555;
         }
+
         .graph-container {
-            margin-bottom: 20px;
-            height: 50vh;
+            height: 40vh;
+            min-height: 300px;
+            position: relative; /* For responsive canvas */
+        }
+
+        #config-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .config-item {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .config-item span {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #444;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            #weightValue {
+                font-size: 3em;
+            }
+            .graph-container {
+                height: 30vh;
+            }
+            #config-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .config-item {
+                width: auto;
+            }
         }
     </style>
 </head>
 <body>
     <h1>ForceGrip</h1>
-    <button id="connect">Connect to ForceGrip</button>
-    <div id="weightValue"><span id="weightText">...</span> kg</div>
-    <button id="tare" disabled>Tare</button>
-    <div id="batteryLevel"><span id="batteryText">...</span> %</div>
-    <div class="graph-container">
-        <canvas id="weightChart"></canvas>
+    <div class="container">
+        <button id="connect">Connect to ForceGrip</button>
+        <div id="weightValue"><span id="weightText">...</span> kg</div>
+        <div id="batteryLevel"><span id="batteryText">...</span> %</div>
+        <div class="graph-container">
+            <canvas id="weightChart"></canvas>
+        </div>
+        <div id="config-container">
+            <button id="tare" disabled>Tare</button>
+            <div class="config-item" id="set_name">
+                <span>Device name:</span>
+                <input type="text" disabled/>
+                <button disabled>Set name</button>
+            </div>
+            <div class="config-item" id="startup_mode">
+                <span>Startup mode:</span>
+                <button disabled>Start in BLE</button>
+                <button disabled>Start in WiFi</button>
+            </div>
+            <div class="config-item" id="calibrate">
+                <span>Calibrate:</span>
+                <input type="number" disabled/>
+                <button disabled>Calibrate</button>
+            </div>
+        </div>
     </div>
     <script>
         // Constants
@@ -156,6 +286,25 @@
                 await weightCharacteristic.startNotifications();
                 await batteryCharacteristic.startNotifications();
                 console.log('Notifications started.');
+                
+                const deviceName = BLE_Device.name.split(' - ')[1];
+                if (deviceName)
+                    document.getElementById('set_name').querySelector('input').value = deviceName;
+                
+
+                // disabling all buttons of the document
+                elements = document.getElementsByTagName("button");
+                for (let i = 0; i < elements.length; i++) {
+                    if(elements[i].id != "connect")
+                        elements[i].disabled = false;
+                }
+                elements = document.getElementsByTagName("input");
+                for (let i = 0; i < elements.length; i++) {
+                    if(elements[i].id != "connect")
+                        elements[i].disabled = false;
+                }
+
+                connectButton.innerText = "Disconnect";
 
             } catch (error) {
                 console.error('Error:', error);
@@ -170,16 +319,25 @@
                 timeLabels = [];
                 
                 connectToScale();
-                connectButton.innerText = "Disconnect";
-                tareButton.disabled = false;
+
             }
             else
             {
                 BLE_Device.gatt.disconnect();
                 controlPointCharacteristic = null;
                 chart.update();
+
                 connectButton.innerText = "Connect to ForceGrip";
-                tareButton.disabled = true;
+                elements = document.getElementsByTagName("button");
+                for (let i = 0; i < elements.length; i++) {
+                    if(elements[i].id != "connect")
+                        elements[i].disabled = true;
+                }
+                elements = document.getElementsByTagName("input");
+                for (let i = 0; i < elements.length; i++) {
+                    if(elements[i].id != "connect")
+                        elements[i].disabled = true;
+                }
             }
         });
 
