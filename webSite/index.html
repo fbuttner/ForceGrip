@@ -23,53 +23,81 @@
             top: 10px;
             right: 10px;
         }
+        .graph-container {
+            margin-bottom: 20px;
+            height: 50vh;
+        }
     </style>
 </head>
 <body>
     <h1>ForceGrip</h1>
     <button id="connect">Connect to ForceGrip</button>
-    <div id="weightValue">0 kg</div>
-    <div id="batteryLevel">0 %</div>
-    <div>
-        <span>Target Weight : </span>
-        <input id="targetWeight" value="15" />
+    <div id="weightValue"><span id="weightText">...</span> kg</div>
+    <button id="tare" disabled>Tare</button>
+    <div id="batteryLevel"><span id="batteryText">...</span> %</div>
+    <div class="graph-container">
+        <canvas id="weightChart"></canvas>
     </div>
-    <canvas id="weightChart" width="400" height="200"></canvas>
     <script>
-        let weightData = [];
-        let timeLabels = [];
-        let chart;
-        let BLE_Device = 0;
+        // Constants
+        const dataLenght = 80*30; // 30s of data
 
-        // Initialize Chart.js graph
-        function initGraph() {
-            const ctx = document.getElementById('weightChart').getContext('2d');
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: timeLabels,
-                    datasets: [{
-                        label: 'Weight (kg)',
-                        data: weightData,
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 2,
-                        fill: false
-                    }]
+        const weightText = document.getElementById("weightText");
+        const batteryText = document.getElementById("batteryText");
+        const graph = document.getElementById("weightChart").getContext("2d");
+        const tareButton = document.getElementById("tare");
+        const connectButton = document.getElementById('connect');
+
+        // Variables
+        let BLE_Device = 0;
+        let controlPointCharacteristic = null;
+
+        // Graph value
+        const graph_labels = new Array(dataLenght);
+        const graph_data = {
+            labels: graph_labels,
+            datasets: [{
+                label: 'Strenght (kg)',
+                data: new Array(dataLenght).fill(0),
+                borderColor: 'blue',
+                backgroundColor: 'rgba(0, 0, 255, 0.1)',
+                tension: 0.3,
+            }]
+        };
+
+        const cgraph_onfig = {
+            type: 'line',
+            data: graph_data,
+            options: {
+                animation: false,
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                    display: false
+                    }
                 },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'Time (s)' }
-                        },
-                        y: {
-                            title: { display: true, text: 'Weight (kg)' },
-                            beginAtZero: true
-                        }
+                elements: {
+                    point: {
+                    pointRadius: 0
+                    }
+                },
+
+                scales: {
+                    x: {
+                        display: false
+                    },
+                    y: {
+                        title: { display: false},
+                        beginAtZero: true,
+                        suggestedmin: 0,
+                        suggestedMax: 50
                     }
                 }
-            });
-        }
+            }
+        };
+
+        const chart = new Chart(graph, cgraph_onfig);
 
         // Connect to BLE weight scale
         async function connectToScale() {
@@ -92,23 +120,23 @@
                 weightCharacteristic.addEventListener('characteristicvaluechanged', event => {
                     const value = event.target.value;
                     const weight = value.getUint16(1, true) / 200; // Implement parse logic based on your device
-                    const targetWeight = document.getElementById('targetWeight').value;
-
+                    
                     //console.log('Weight:', weight);
-                    document.getElementById('weightValue').innerText = weight.toLocaleString(undefined, { minimumFractionDigits: 1 , maximumFractionDigits:1}) + " kg";
-                    //updateGraph(weight);
-                    if(weight < (0.9*targetWeight)) {
-                        document.getElementById('weightValue').style.color = "blue";
-                    } else if (weight > (1.1*targetWeight))
-                    {
-                        document.getElementById('weightValue').style.color = "red";
-                    } else {
-                        document.getElementById('weightValue').style.color = "green";
-                    }
-                    weightData.push(weight);
+                    weightText.textContent = weight.toFixed(1);
+
+                    
+                    graph_data.datasets[0].data.push(weight);
 
                     const currentTime = new Date().toLocaleTimeString();
-                    timeLabels.push(currentTime);
+                    graph_labels.push(currentTime);
+
+                    while (graph_labels.length > dataLenght) {
+                        graph_labels.shift();
+                        graph_data.datasets[0].data.shift();
+                    }
+                    
+                    chart.update();
+                    
                 });
 
                 console.log('Getting battery level measurement characteristic...');
@@ -119,8 +147,11 @@
                     const value = event.target.value;
                     const batteryLevel = value.getUint8(0);
 
-                    document.getElementById('batteryLevel').innerText = batteryLevel + " %";
+                    batteryText.textContent = batteryLevel;
                 });
+
+                console.log('Getting control point characteristic...');
+                controlPointCharacteristic = await service.getCharacteristic(0x2a9f); // Weight Scale Control Point
 
                 await weightCharacteristic.startNotifications();
                 await batteryCharacteristic.startNotifications();
@@ -132,25 +163,42 @@
         }
 
         // Event listener for connect button
-        document.getElementById('connect').addEventListener('click', () => {
+        connectButton.addEventListener('click', () => {
             if((BLE_Device == 0) || (!BLE_Device.gatt.connected))
             {
                 weightData = [];
                 timeLabels = [];
                 
                 connectToScale();
-                document.getElementById('connect').innerText = "Disconnect";
+                connectButton.innerText = "Disconnect";
+                tareButton.disabled = false;
             }
             else
             {
                 BLE_Device.gatt.disconnect();
+                controlPointCharacteristic = null;
                 chart.update();
-                document.getElementById('connect').innerText = "Connect to ForceGrip";
+                connectButton.innerText = "Connect to ForceGrip";
+                tareButton.disabled = true;
             }
         });
 
-        // Initialize graph on page load
-        window.onload = initGraph;
+        // Event listener for tare button
+        tareButton.addEventListener('click', async () => {
+            if (controlPointCharacteristic) {
+                try {
+                    console.log('Sending tare command...');
+                    const tareCommand = new TextEncoder().encode('tare'); // Encode "tare" as bytes
+                    await controlPointCharacteristic.writeValue(tareCommand);
+                    
+                    console.log('Tare command sent successfully.');
+                } catch (error) {
+                    console.error('Error sending tare command:', error);
+                }
+            } else {
+                alert('Please connect to the ForceGrip device first.');
+            }
+        });
     </script>
 </body>
 </html>
