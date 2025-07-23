@@ -1,3 +1,4 @@
+/* General Styling */
 * {
     margin: 0;
     padding: 0;
@@ -5,179 +6,330 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f7fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #eef2f7;
     color: #333;
+    line-height: 1.6;
 }
 
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: 900px;
+    margin: 20px auto;
     padding: 20px;
-    position: relative;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 h2, h3 {
-    color: #555;
+    color: #2c3e50;
     text-align: center;
+    margin-bottom: 15px;
 }
 
+/* Instant Value Display */
 .weight {
+    background-color: #f9f9f9;
+    padding: 20px 0;
+    border-radius: 8px;
     margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .weight h2 {
-    margin: 30px auto;
+    font-size: 2.5em;
+    color: #3498db;
+    margin-bottom: 5px;
 }
 
-.battery-level {
+.weight h3 {
+    font-size: 1.5em;
+    color: #555;
+}
+
+/* Battery Icon */
+.battery-icon-container {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: #fff;
+    padding: 5px 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.battery-outline {
+    width: 30px;
+    height: 15px;
+    border: 2px solid #333;
+    border-radius: 3px;
+    position: relative;
+}
+
+.battery-outline::after {
+    content: '';
+    width: 4px;
+    height: 8px;
+    background-color: #333;
     position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 20%;
-}
-
-.battery-bar {
-    width: 100%;
-    height: 20px;
-    background-color: #ddd;
-    border-radius: 10px;
-    overflow: hidden;
+    top: 50%;
+    right: -6px;
+    transform: translateY(-50%);
+    border-radius: 0 2px 2px 0;
 }
 
 .battery-fill {
     height: 100%;
-    background-color: #76b900;
+    background-color: #28a745;
     width: 50%; /* Initial battery level */
-    border-radius: 10px;
+    border-radius: 1px;
+    transition: width 0.3s ease-in-out;
 }
 
-#battery-value {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    text-align: center;
+#battery-percentage {
+    font-size: 0.9em;
+    font-weight: bold;
+    fill: #333;
 }
+
+/* Graph */
 .graph-container {
     margin-bottom: 20px;
-    height: 50vh;
+    height: 350px; /* Adjusted height for better visual balance */
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 canvas {
-    width: 100%; /* Ensure the canvas takes up full width */
-    height: 100%; /* Ensure the canvas takes up full height of the container */
-    display: block; /* Remove any unwanted space under the canvas */
+    width: 100%;
+    height: 100%;
+    display: block;
 }
+
+/* Tare Button */
 .tare-btn button {
     display: block;
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     background-color: #007bff;
     color: white;
     border: none;
-    border-radius: 5px;
-    font-size: 1.1em;
+    border-radius: 8px;
+    font-size: 1.2em;
     cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 20px;
 }
 
 .tare-btn button:hover {
     background-color: #0056b3;
 }
 
-/* Dropdown Button and Content */
-.dropdown {
-    position: relative;
-    margin-top: 20px;
-}
-
-.dropdown-btn {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    background-color: lightgray;
-    color: black;
-    border: none;
-    border-radius: 5px;
-    font-size: 1.1em;
-    cursor: pointer;
-}
-
-.sub-dropdown-btn {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    background-color: #e9e9e9;
-    font-size: 1.1em;
-    cursor: pointer;
-    font-weight: normal;
-    color: black;
-}
-
-.sub-dropdown{
-    margin-top: 10px;
-    background-color: #fff;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-}
-.sub-dropdown>form {
-    display: flex;
-    flex-direction: column;
+/* Settings Section */
+.settings-section {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     padding: 20px;
 }
 
-.sub-dropdown>form h4 {
-    margin-top: 15px;
-    margin-bottom: 5px;
+.tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
 }
 
-.sub-dropdown>form h4:first-child {
-    margin-top: 0px;
+.tab-button {
+    background-color: transparent;
+    border: none;
+    padding: 15px 20px;
+    cursor: pointer;
+    font-size: 1.1em;
+    color: #555;
+    transition: color 0.3s ease, border-bottom 0.3s ease;
+    border-bottom: 2px solid transparent;
 }
 
-.dropdown-content input , .dropdown-content select {
-    padding: 10px;
-    margin: 10px 0;
-    font-size: 1em;
-    border: 1px solid #ccc;
+.tab-button:hover {
+    color: #007bff;
+}
+
+.tab-button.active {
+    color: #007bff;
+    border-bottom: 2px solid #007bff;
+    font-weight: bold;
+}
+
+.tab-content {
+    display: none; /* Hidden by default */
+    padding: 20px 0;
+}
+
+.tab-content.active {
+    display: block; /* Show active tab content */
+}
+
+.tab-content form {
+    display: flex;
+    flex-direction: column;
+}
+
+.tab-content label {
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+.tab-content input[type="text"],
+.tab-content input[type="password"],
+.tab-content input[type="number"],
+.tab-content select {
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
     border-radius: 5px;
+    font-size: 1em;
+    width: 100%;
 }
 
-.dropdown-content button {
+.tab-content button[type="submit"] {
     background-color: #28a745;
     color: white;
-    padding: 12px;
+    padding: 12px 20px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     font-size: 1.1em;
     cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
 }
 
-.dropdown-content button:hover {
+.tab-content button[type="submit"]:hover {
     background-color: #218838;
 }
 
+.tab-content h4 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #34495e;
+}
+
 .wifi-item {
-    background-color: #f8f8f8;
-    margin-top: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f0f4f8;
+    padding: 10px 15px;
     border-radius: 5px;
-    overflow: hidden;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.03);
 }
-.wifi-item:nth-child(even) {
-    background-color: #eee;
-}
+
 .wifi-item span {
-    display: inline-block;
-    padding: 7px 0 7px 7px;
-    margin-right: 30px;
+    font-weight: normal;
+    color: #333;
 }
+
 .wifi-item button {
-    display: block;
-    float: right;
-    height: 100%;
-    padding: 7px;
-    font-size: 1em;
-    background-color: gray;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease;
+    margin-left: 5px;
+}
+
+.wifi-item button.delete {
+    background-color: #dc3545;
     color: white;
-    border-radius: 0;
+}
+
+.wifi-item button.delete:hover {
+    background-color: #c82333;
+}
+
+.wifi-item button.connect {
+    background-color: #007bff;
+    color: white;
+}
+
+.wifi-item button.connect:hover {
+    background-color: #0056b3;
+}
+
+.wifi-item button.selected {
+    background-color: #28a745;
+    color: white;
+}
+
+.wifi-item button.selected:hover {
+    background-color: #218838;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+/* The Close Button */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        margin: 10px;
+        padding: 15px;
+    }
+
+    .tabs {
+        flex-direction: column;
+    }
+
+    .tab-button {
+        width: 100%;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+
+    .tab-button.active {
+        border-bottom: 1px solid #007bff;
+    }
+
+    .battery-level {
+        flex-direction: column;
+    }
+
+    .battery-bar {
+        width: 100%;
+    }
 }

@@ -2,8 +2,10 @@ const dataLenght = 80*30; // 30s of data
 
 const weightText = document.getElementById("weight-value");
 const weightMaxText = document.getElementById("weight-max");
-const batteryText = document.getElementById("battery-value");
+const batteryPercentageText = document.getElementById("battery-percentage");
 const batteryFill = document.getElementById('battery-fill');
+const confirmationModal = document.getElementById("confirmation-modal");
+const confirmationMessage = document.getElementById("confirmation-message");
 const graph = document.getElementById("Weight-Graph").getContext("2d");
 
 const graph_labels = new Array(dataLenght);
@@ -65,8 +67,8 @@ socket.onmessage = function(event) {
     let batteryLevel = new Int8Array(event.data.slice(12*len, 12*len+1))[0];
 
     weightText.textContent = (weights[len-1]/1000).toFixed(1);
-    batteryText.textContent = batteryLevel+" %";
-    batteryFill.style.width = batteryLevel+"%";
+    batteryPercentageText.textContent = batteryLevel + "%";
+    batteryFill.style.width = batteryLevel + "%";
     
     // Ajouter donnée au graphique
     for (let i = 0; i < len; i++) {
@@ -90,10 +92,24 @@ socket.onerror = function(err) {
     console.log("Erreur WebSocket : ", err);
 };
 
-function toggleDropdown(elementsID) {
-    const dropdownContent = document.getElementById(elementsID);
-    dropdownContent.style.display = dropdownContent.style.display === 'none' ? '' : 'none';
+function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tab-button");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Set the default active tab on page load
+    document.querySelector(".tab-button").click();
+});
 
 document.getElementById("form-tarring").addEventListener("submit", function(event) {
     event.preventDefault();
@@ -103,14 +119,13 @@ document.getElementById("form-tarring").addEventListener("submit", function(even
     
     fetch("/config", { method: 'POST', body: new URLSearchParams(formData)})
         .then(response => response.text())
-        .then(text => {
-            alert(text);
+        .then(text => {            
+            showConfirmation(text);
         })
         .catch(error => {
             console.error('Error:', error);
         });
 });
-
 
 document.getElementById("form-configuration").addEventListener("submit", function(event) {
     event.preventDefault();
@@ -122,8 +137,8 @@ document.getElementById("form-configuration").addEventListener("submit", functio
 
     fetch("/config", { method: 'POST', body: new URLSearchParams(formData)})
     .then(response => response.text())
-    .then(text => {
-        alert(text);
+    .then(text => {        
+        showConfirmation(text);
     })
     .catch(error => {
         console.error('Error:', error);
@@ -141,8 +156,8 @@ document.getElementById("form-password").addEventListener("submit", function(eve
 
     fetch("/config", { method: 'POST', body: new URLSearchParams(formData)})
     .then(response => response.text())
-    .then(text => {
-        alert(text);
+    .then(text => {        
+        showConfirmation(text);
     })
     .catch(error => {
         console.error('Error:', error);
@@ -158,10 +173,20 @@ document.getElementById("form-calibration").addEventListener("submit", function(
 
     fetch("/config", { method: 'POST', body: new URLSearchParams(formData)})
     .then(response => response.text())
-    .then(text => {
-        alert(text);
+    .then(text => {        
+        showConfirmation(text);
     })
     .catch(error => {
         console.error('Error:', error);
     });
 });
+
+function showConfirmation(message) {
+    confirmationMessage.textContent = message;
+    confirmationModal.style.display = "block";
+
+    // Close the modal after a few seconds (e.g., 3 seconds)
+    setTimeout(function() {
+        confirmationModal.style.display = "none";
+    }, 5000);
+}

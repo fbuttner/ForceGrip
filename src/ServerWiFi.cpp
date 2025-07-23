@@ -385,7 +385,18 @@ void ServerWiFi::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
 
 String ServerWiFi::HTML_processor(const String& var)
 {
-    if(var == "DEVICE_NAME")
+    if(var == "TITLE")
+    {
+        String _device_name = config.get_name();
+        
+        if(_device_name == "")
+            _device_name = "ForceGrip";
+        else
+            _device_name = "ForceGrip - "+_device_name;
+        
+        return _device_name;
+    }
+    else if(var == "DEVICE_NAME")
         return config.get_name();
     else if(var == "DEVICE_PASSWORD")
         return config.get_password();

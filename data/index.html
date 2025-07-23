@@ -3,93 +3,90 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>%DEVICE_NAME%</title>
+        <title>%TITLE%</title>
         <link rel="stylesheet" href="styles.css">
         <script src="./chart.js"></script>
         <script src="./script.js" defer></script>
     </head>
     <body>
+        <div class="battery-icon-container">
+            <div class="battery-outline">
+                <div class="battery-fill" id="battery-fill"></div>
+            </div>
+            <span id="battery-percentage">...</span>
+        </div>
         <div class="container">
             <!-- Instant Value Display -->
             <div class="weight">
                 <h2>Strength: <span id="weight-value">...</span> Kg</h2>
                 <h3>Max: <span id="weight-max">...</span> Kg</h3>
             </div>
-            
-            <!-- Battery Level -->
-            <div class="battery-level">
-                <span id="battery-value">...</span>
-                <div class="battery-bar" id="battery-bar">
-                    <div class="battery-fill" id="battery-fill"></div>
-                </div>
-            </div>
-            
             <!-- Graph Showing Value Through Time -->
             <div class="graph-container">
                 <canvas id="Weight-Graph"></canvas>
             </div>
-            
             <!-- Tare Button -->
             <form id="form-tarring" method="post" class="tare-btn">
                 <button type="submit" name="tare">Tare</button>
             </form>
-
-            <!-- Dropdown for Configuration -->
-            <div class="dropdown">
-                <button class="dropdown-btn" onclick="toggleDropdown('dropdownSetup')">Settings</button>
-                <div class="dropdown-content" id="dropdownSetup" style="display: none;">
-                    <!-- WiFi Configuration Section -->
-                    <div class="sub-dropdown">
-                        <h3 class="sub-dropdown-btn" onclick="toggleDropdown('form-configuration')">Configuration</h3>
-                        <form id="form-configuration" method="post" style="display: none;">
-                            <label for="device_name">Device Name</label>
-                            <input type="text" id="device_name" placeholder="Enter Device Name" value="%DEVICE_NAME%"  pattern="[A-Za-z 0-9\-_]+">
-                            <label for="scale_factor">Scale Factor</label>
-                            <input type="text" id="scale_factor" placeholder="Enter New Scale Factor" pattern="[0-9.,]+" value="%SCALE_FACTOR%"required>
-                            <label for="startup_mode">Startup Mode</label>
-                            <select id="startup_mode">
-                                <option value="0" %STARTUP_MODE_BLUETOOTH_SELECTED% >BlueTooth</option>
-                                <option value="1" %STARTUP_MODE_WIFI_SELECTED% >Wifi</option>
-                            </select>
-                            <button type="submit">Save</button>
-                        </form>
-                    </div>
-                    <!-- Changing the password of the WiFi AP -->
-                    <div class="sub-dropdown">
-                        <h3 class="sub-dropdown-btn" onclick="toggleDropdown('form-password')">Changing AP Password</h3>
-                        <form id="form-password" method="post" style="display: none;">
-                            <label for="old_password">Old Password:</label>
-                            <input type="password" id="old_password" placeholder="Enter Old Password" required>
-                            <label for="password">New Password:</label>
-                            <input type="password" id="new_password" placeholder="Enter New Password" required>
-                            <label for="password">New Password:</label>
-                            <input type="password" id="new_password_bis" placeholder="Enter New Password Reapeat" required>
-                            <button type="submit">Save</button>
-                        </form>
-                    </div>
-                    <div class="sub-dropdown">
-                        <h3 class="sub-dropdown-btn" onclick="toggleDropdown('form-WiFi-List')">WiFi Networks</h3>
-                        <form id="form-WiFi-List" method="post" style="display: none;">
-                            <h4>List of saved WiFi Networks</h4>
-                            %WIFI_NETWORKS%
-                            <h4>Adding a new WiFi</h4>
-                            <label for="password">New SSID:</label>
-                            <input type="text" name="New_WiFi_SSID" placeholder="New SSID">
-                            <label for="New_WiFi_password">Password:</label>
-                            <input type="password" name="New_WiFi_password" placeholder="Enter WiFi Password">
-                            <button type="submit">Save</button>
-                        </form>
-                    </div>
-                    <!-- Calibration Section -->
-                    <div class="sub-dropdown">
-                        <h3 class="sub-dropdown-btn" onclick="toggleDropdown('form-calibration')">Calibration</h3>
-                        <form id="form-calibration" method="post" style="display: none;">
-                            <label for="Calibration">Enter Weight Value (kg):</label>
-                            <input type="number" id="Calibration" placeholder="Enter weight" required>
-                            <button type="submit">Calibrate</button>
-                        </form>
-                    </div>
+            <!-- Settings Section with Tabs -->
+            <div class="settings-section">
+                <div class="tabs">
+                    <button class="tab-button active" onclick="openTab(event, 'Configuration')">Configuration</button>
+                    <button class="tab-button" onclick="openTab(event, 'AP-Password')">AP Password</button>
+                    <button class="tab-button" onclick="openTab(event, 'WiFi-Networks')">WiFi Networks</button>
+                    <button class="tab-button" onclick="openTab(event, 'Calibration')">Calibration</button>
                 </div>
+                <div id="Configuration" class="tab-content active">
+                    <form id="form-configuration" method="post">
+                        <label for="device_name">Device Name</label>
+                        <input type="text" id="device_name" placeholder="Enter Device Name" value="%DEVICE_NAME%" pattern="[A-Za-z 0-9\-_]+">
+                        <label for="scale_factor">Scale Factor</label>
+                        <input type="text" id="scale_factor" placeholder="Enter New Scale Factor" pattern="[0-9.,]+" value="%SCALE_FACTOR%" required>
+                        <label for="startup_mode">Startup Mode</label>
+                        <select id="startup_mode">
+                            <option value="0" %STARTUP_MODE_BLUETOOTH_SELECTED%>BlueTooth</option>
+                            <option value="1" %STARTUP_MODE_WIFI_SELECTED%>Wifi</option>
+                        </select>
+                        <button type="submit">Save</button>
+                    </form>
+                </div>
+                <div id="AP-Password" class="tab-content">
+                    <form id="form-password" method="post">
+                        <label for="old_password">Old Password:</label>
+                        <input type="password" id="old_password" placeholder="Enter Old Password" required>
+                        <label for="new_password">New Password:</label>
+                        <input type="password" id="new_password" placeholder="Enter New Password" required>
+                        <label for="new_password_bis">Confirm New Password:</label>
+                        <input type="password" id="new_password_bis" placeholder="Enter New Password Repeat" required>
+                        <button type="submit">Save</button>
+                    </form>
+                </div>
+                <div id="WiFi-Networks" class="tab-content">
+                    <form id="form-WiFi-List" method="post">
+                        <h4>List of saved WiFi Networks</h4>
+                        %WIFI_NETWORKS%
+                        <h4>Adding a new WiFi</h4>
+                        <label for="New_WiFi_SSID">New SSID:</label>
+                        <input type="text" name="New_WiFi_SSID" placeholder="New SSID">
+                        <label for="New_WiFi_password">Password:</label>
+                        <input type="password" name="New_WiFi_password" placeholder="Enter WiFi Password">
+                        <button type="submit">Save</button>
+                    </form>
+                </div>
+                <div id="Calibration" class="tab-content">
+                    <form id="form-calibration" method="post">
+                        <label for="Calibration">Enter Weight Value (kg):</label>
+                        <input type="number" id="Calibration" placeholder="Enter weight" required>
+                        <button type="submit">Calibrate</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Confirmation Modal -->
+        <div id="confirmation-modal" class="modal" onclick="this.style.display = 'none';">
+            <div class="modal-content">
+                <p id="confirmation-message"></p>
             </div>
         </div>
     </body>
