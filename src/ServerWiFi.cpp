@@ -295,8 +295,8 @@ void ServerWiFi::createWebServer()
                 configChanged = true;
 
                 response += "\nStartup mode set to: ";
-                response += (_startup_mode?(_startup_mode==1?"WIFI AP":"WIFI"):"BLE");
-                log_d("Startup mode set to: %d", _startup_mode);
+                response += (_startup_mode?"WIFI":"BLE");
+                log_d("Startup mode set to: %s", (_startup_mode?"WIFI":"BLE"));
             }
 
             if (request->hasParam("old_password", true) && request->hasParam("new_password", true) && request->hasParam("new_password_bis", true))

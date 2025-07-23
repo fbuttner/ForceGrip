@@ -66,6 +66,19 @@ void BLE_Scale::init(const std::string& deviceName) {
     _pBatteryCharacteristic->addDescriptor(pBLE2902);
     _pBatteryCharacteristic->setNotifyProperty(true);
 
+    // Create a BLE Control Point Characteristic
+    log_i("Creating BLE Control Point Characteristic...");
+    _pControlPointCharacteristic = pService->createCharacteristic(_controlPointCharUUID, BLECharacteristic::PROPERTY_WRITE);
+    _pControlPointCharacteristic->setCallbacks(this);
+
+    // Create a BLE Ack Characteristic
+    log_i("Creating BLE Ack Characteristic...");
+    _pAckCharacteristic = pService->createCharacteristic(_ackCharUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+    pBLE2902 = new BLE2902();
+    pBLE2902->setNotifications(true);
+    _pAckCharacteristic->addDescriptor(pBLE2902);
+    _pAckCharacteristic->setNotifyProperty(true);
+
     // Start the service
     log_i("Starting BLE Service...");
     pService->start();
@@ -118,4 +131,103 @@ void BLE_Scale::onDisconnect(BLEServer* pBLEServer) {
 
 bool BLE_Scale::isConnected() {
     return _deviceConnected;
+}
+
+
+void BLE_Scale::onWrite(BLECharacteristic *pCharacteristic) {
+    std::string value = pCharacteristic->getValue();
+
+    if (value.length() > 0)
+    {
+        log_i("Received command: %s", value.c_str());
+        if (value == "tare")
+        {
+            detachInterrupt(LOADCELL_DOUT_PIN);
+            LoadCell.tare(10);
+            attachInterrupt(LOADCELL_DOUT_PIN, read_loadCell_ISR, FALLING);
+            log_d("BLE Tare done");
+            _pAckCharacteristic->setValue("OK");
+            _pAckCharacteristic->notify();
+        }
+        else
+        {
+            // split the string at :
+            size_t colonPos = value.find(':');
+            if (colonPos != std::string::npos)
+            {
+                std::string command = value.substr(0, colonPos);
+                std::string param = value.substr(colonPos + 1);
+                bool configChanged = false;
+
+                if (command == "set_scale")
+                {
+                    float scaleFactor = std::stof(param);
+
+                    detachInterrupt(LOADCELL_DOUT_PIN);
+                    LoadCell.set_scale(scaleFactor);
+                    attachInterrupt(LOADCELL_DOUT_PIN, read_loadCell_ISR, FALLING);
+                    
+                    config.set_scaleFactor(scaleFactor);
+                    configChanged = true;
+
+                    log_d("BLE Scale factor set to: %f", scaleFactor);
+                }
+                else if (command == "set_name")
+                {
+                    config.set_name(param.c_str());
+                    configChanged = true;
+
+                    log_d("BLE Device name set to: %s", param.c_str());
+                }
+                else if (command == "calibrate")
+                {
+                    float calibration_weight = std::stof(param) * 1000;
+
+                    detachInterrupt(LOADCELL_DOUT_PIN);
+
+                    double val = LoadCell.get_value(10);
+                    float _scaleFactor = val / calibration_weight;
+                    LoadCell.set_scale(_scaleFactor);
+                    attachInterrupt(LOADCELL_DOUT_PIN, read_loadCell_ISR, FALLING);
+
+                    config.set_scaleFactor(_scaleFactor);
+                    configChanged = true;
+                    
+                    log_d("Calibration value set to: %f", _scaleFactor);
+                }
+                else if (command == "startup_mode")
+                {
+                    int _startup_mode = std::stoi(param);
+
+                    config.set_startingMode(_startup_mode);
+                    configChanged = true;
+
+                    log_d("Startup mode set to: %s", (_startup_mode?"WIFI":"BLE"));
+                }
+                else
+                {
+                    log_d("Unknown command: %s:%s", command.c_str(), param.c_str());
+                }
+                
+                if(configChanged)
+                {
+                    config.writeConfig();
+                    _pAckCharacteristic->setValue("OK");
+                    _pAckCharacteristic->notify();
+                }
+                else
+                {
+                    _pAckCharacteristic->setValue("ERROR");
+                    _pAckCharacteristic->notify();
+                }
+            }
+            else
+            {
+                _pAckCharacteristic->setValue("ERROR");
+                _pAckCharacteristic->notify();
+                
+                log_d("Unknown command: %s", value.c_str());
+            }
+        }
+    }
 }
