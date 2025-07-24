@@ -4,8 +4,9 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>%TITLE%</title>
-        <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="./styles.css">
         <script src="./chart.js"></script>
+        <script src="./NoSleep.min.js"></script>
         <script src="./script.js" defer></script>
     </head>
     <body>
@@ -25,6 +26,7 @@
             <div class="graph-container">
                 <canvas id="Weight-Graph"></canvas>
             </div>
+            <button id="noSleep" class="btn-off">No Sleep : OFF</button>
             <!-- Tare Button -->
             <form id="form-tarring" method="post" class="tare-btn">
                 <button type="submit" name="tare">Tare</button>
@@ -89,5 +91,24 @@
                 <p id="confirmation-message"></p>
             </div>
         </div>
+        <script>
+            var noSleep = new NoSleep();
+
+            var wakeLockEnabled = false;
+            var noSleepEl = document.getElementById("noSleep");
+            noSleepEl.addEventListener('click', function() {
+                if (!wakeLockEnabled) {
+                noSleep.enable(); // keep the screen on!
+                wakeLockEnabled = true;
+                noSleepEl.innerText = "No Sleep : ON";
+                noSleepEl.className = "btn-on";
+                } else {
+                noSleep.disable(); // let the screen turn off.
+                wakeLockEnabled = false;
+                noSleepEl.innerText = "No Sleep : OFF";
+                noSleepEl.className = "btn-off";
+                }
+            }, false);
+        </script>
     </body>
 </html>
